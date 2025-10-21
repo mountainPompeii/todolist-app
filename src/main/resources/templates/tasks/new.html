@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Новая задача</title>
+    <meta charset="UTF-8">
+</head>
+<body>
+<h1>Создание задачи</h1>
+
+<form th:action="@{/tasks}" th:object="${task}" method="post">
+    <p>
+        <label>Название: </label>
+        <input type="text" th:field="*{title}" placeholder="Введите название"/>
+
+        <span th:if="${#fields.hasErrors('title')}"
+              th:errors="*{title}" style="color:red"></span>
+    </p>
+    <p>
+        <label>Описание: </label>
+        <textarea th:field="*{description}" placeholder="Введите описание"></textarea>
+
+        <span th:if="${#fields.hasErrors('description')}"
+              th:errors="*{description}" style="color:red"></span>
+    </p>
+    <p>
+        <label>Статус: </label>
+        <label>
+            <select th:field="*{status}">
+                <option th:each="s : ${statuses}"
+                        th:value="${s}"
+                        th:text="${s.displayName}">
+                </option>
+            </select>
+        </label>
+    </p>
+    <p>
+    <p>
+        <label>Приоритет: </label>
+        <label>
+            <select th:field="*{priority}">
+                <option th:each="p : ${priorities}"
+                        th:value="${p}"
+                        th:text="${p.displayName}">
+                </option>
+            </select>
+        </label>
+    </p>
+    </p>
+
+    <input type="submit" value="Создать"/>
+</form>
+
+<a th:href="@{/tasks}">Назад</a>
+
+</body>
+</html>
+

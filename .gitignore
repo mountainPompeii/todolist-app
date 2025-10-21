@@ -1,0 +1,45 @@
+HELP.md
+target/
+.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+### Java ###
+*.class
+*.log
+*.jar
+*.war
+*.ear
+hs_err_pid*
+
+### Maven ###
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+
+### IntelliJ IDEA ###
+.idea/
+*.iml
+out/
+
+### OS files ###
+.DS_Store
+Thumbs.db
+
+### Spring Boot ###
+application-*.yml
+application-*.properties
+application.properties
+.env
+
+### Logs ###
+logs/
+*.log
+
+### Other ###
+/.mvn/

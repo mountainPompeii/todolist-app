@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Просмотр задачи</title>
+    <meta charset="UTF-8">
+</head>
+<body>
+<h1>Задача</h1>
+
+<p><b>ID:</b> <span th:text="${task.id}"></span></p>
+<p><b>Название:</b> <span th:text="${task.title}"></span></p>
+<p><b>Описание:</b> <span th:text="${task.description}"></span></p>
+<p><b>Время создания:</b> <span th:text="${task.createdAt}"></span></p>
+<p><b>Статус:</b> <span th:text="${task.status != null ? task.status.displayName : 'Нет статуса'}"></span></p>
+<p><b>Приоритет:</b> <span th:text="${task.priority != null ? task.priority.displayName : 'Нет приоритета'}"></span></p>
+
+<a th:href="@{/tasks}">Назад к списку</a> |
+<a th:href="@{/tasks/{id}/edit(id=${task.id})}">Редактировать</a>
+</body>
+</html>
