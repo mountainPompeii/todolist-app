@@ -19,8 +19,8 @@ public class PeopleService {
         this.peopleRepository = peopleRepository;
     }
 
-    public Person findByName(String name){
-        return peopleRepository.findByName(name)
+    public Person findByName(String username){
+        return peopleRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("Имя не найдено!"));
     }
 }

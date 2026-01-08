@@ -23,10 +23,10 @@ public class PersonDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-       Optional<Person> person = peopleRepository.findByName(username);
+       Optional<Person> person = peopleRepository.findByUsername(username);
 
        if (person.isEmpty()) {
-           throw new UsernameNotFoundException(username);
+           throw new UsernameNotFoundException("User not found!");
        }
 
        return new PersonDetails(person.get());
