@@ -1,4 +1,4 @@
-package ua.august.todoapp.services;
+package ua.august.todoapp.services.implementations;
 
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,16 +8,17 @@ import org.springframework.transaction.annotation.Transactional;
 import ua.august.todoapp.dto.PersonDTO;
 import ua.august.todoapp.entity.Person;
 import ua.august.todoapp.repositories.PeopleRepository;
+import ua.august.todoapp.services.interfaces.RegistrationService;
 
 @Service
-public class RegistrationService {
+public class RegistrationServiceImpl implements RegistrationService {
 
     private final ModelMapper modelMapper;
     private final PeopleRepository peopleRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    public RegistrationService(ModelMapper modelMapper, PeopleRepository peopleRepository, PasswordEncoder passwordEncoder) {
+    public RegistrationServiceImpl(ModelMapper modelMapper, PeopleRepository peopleRepository, PasswordEncoder passwordEncoder) {
         this.modelMapper = modelMapper;
         this.peopleRepository = peopleRepository;
         this.passwordEncoder = passwordEncoder;
