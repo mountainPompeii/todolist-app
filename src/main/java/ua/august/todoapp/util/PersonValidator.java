@@ -6,8 +6,10 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
-import ua.august.todoapp.entity.Person;
+import ua.august.todoapp.dto.PersonDTO;
 import ua.august.todoapp.services.PersonDetailsService;
+
+import java.util.Objects;
 
 @Component
 public class PersonValidator implements Validator {
@@ -21,19 +23,23 @@ public class PersonValidator implements Validator {
 
     @Override
     public boolean supports(Class<?> clazz) {
-        return Person.class.equals(clazz);
+        return PersonDTO.class.equals(clazz);
     }
 
     @Override
     public void validate(Object target, Errors errors) {
-        Person person = (Person) target;
+        PersonDTO personDTO = (PersonDTO) target;
 
-        try {
-            personDetailsService.loadUserByUsername(person.getUsername());
-        } catch (UsernameNotFoundException ignored) {
-            return;
+        if (personDetailsService.existsByUsername(personDTO.getUsername())) {
+            errors.rejectValue("username",
+                    "",
+                    "Username is already taken");
         }
 
-        errors.rejectValue("username", "", "Человек с таким именем пользователя существует!");
+        if (!Objects.equals(personDTO.getPassword(), personDTO.getConfirmPassword())) {
+            errors.rejectValue("confirmPassword",
+                    "password.mismatch",
+                    "Passwords do not match!");
+        }
     }
 }

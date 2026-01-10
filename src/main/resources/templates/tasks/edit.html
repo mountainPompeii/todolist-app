@@ -1,27 +1,27 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>Редактирование задачи</title>
+    <title>Edit Task</title>
     <meta charset="UTF-8">
 </head>
 <body>
-<h1>Редактирование задачи</h1>
+<h1>Edit Task</h1>
 
 <form th:action="@{/tasks/{id}(id=${task.id})}" th:object="${task}" method="post">
     <input type="hidden" name="_method" value="patch"/>
 
     <p>
-        <label>Название: </label>
+        <label>Title: </label>
         <input type="text" th:field="*{title}"/>
     </p>
 
     <p>
-        <label>Описание: </label>
+        <label>Description: </label>
         <textarea th:field="*{description}"></textarea>
     </p>
 
     <p>
-        <label>Статус: </label>
+        <label>Status: </label>
         <select th:field="*{status}">
             <option th:each="s : ${statuses}"
                     th:value="${s}"
@@ -31,7 +31,7 @@
     </p>
 
     <p>
-        <label>Приоритет: </label>
+        <label>Priority: </label>
         <select th:field="*{priority}">
             <option th:each="p : ${priorities}"
                     th:value="${p}"
@@ -40,10 +40,10 @@
         </select>
     </p>
 
-    <input type="submit" value="Сохранить изменения"/>
+    <input type="submit" value="Save Changes"/>
 </form>
 
-<a th:href="@{/tasks}">Назад к списку</a>
+<a th:href="@{/tasks}">Back to list</a>
 
 </body>
 </html>

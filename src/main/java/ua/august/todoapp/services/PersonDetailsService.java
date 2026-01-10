@@ -33,4 +33,8 @@ public class PersonDetailsService implements UserDetailsService {
 
     }
 
+    public boolean existsByUsername(String username) {
+        return peopleRepository.existsByUsername(username);
+    }
+
 }

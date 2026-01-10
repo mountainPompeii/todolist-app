@@ -1,36 +1,36 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>Все задачи</title>
+    <title>All Tasks</title>
     <meta charset="UTF-8">
 </head>
 <body>
-<h1>Список задач</h1>
+<h1>Task List</h1>
 
-<a th:href="@{/tasks/new}">Добавить новую задачу</a>
+<a th:href="@{/tasks/new}">Add New Task</a>
 
 <table border="1" cellpadding="5">
     <tr>
         <th>ID</th>
-        <th>Название</th>
-        <th>Описание</th>
-        <th>Статус</th>
-        <th>Приоритет</th>
-        <th>Действия</th>
+        <th>Title</th>
+        <th>Description</th>
+        <th>Status</th>
+        <th>Priority</th>
+        <th>Actions</th>
     </tr>
     <tr th:each="task : ${tasks}">
         <td th:text="${task.id}"></td>
         <td th:text="${task.title}"></td>
         <td th:text="${task.description}"></td>
-        <td th:text="${task.status != null ? task.status.displayName : 'Нет статуса'}"></td>
-        <td th:text="${task.priority != null ? task.priority.displayName : 'Нет приоритета'}"></td>
+        <td th:text="${task.status != null ? task.status.displayName : 'No status'}"></td>
+        <td th:text="${task.priority != null ? task.priority.displayName : 'No priority'}"></td>
 
         <td>
-            <a th:href="@{/tasks/{id}(id=${task.id})}">Просмотр</a> |
-            <a th:href="@{/tasks/{id}/edit(id=${task.id})}">Редактировать</a> |
+            <a th:href="@{/tasks/{id}(id=${task.id})}">View</a> |
+            <a th:href="@{/tasks/{id}/edit(id=${task.id})}">Edit</a> |
             <form th:action="@{/tasks/{id}(id=${task.id})}" method="post" style="display:inline;">
                 <input type="hidden" name="_method" value="delete"/>
-                <input type="submit" value="Удалить" onclick="return confirm('Удалить задачу?');"/>
+                <input type="submit" value="Delete" onclick="return confirm('Delete task?');"/>
             </form>
         </td>
     </tr>
