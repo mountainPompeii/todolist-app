@@ -13,8 +13,8 @@ import ua.august.todoapp.entity.Person;
 import ua.august.todoapp.entity.Priority;
 import ua.august.todoapp.entity.Status;
 import ua.august.todoapp.entity.Task;
-import ua.august.todoapp.services.PersonDetailsService;
-import ua.august.todoapp.services.TaskService;
+import ua.august.todoapp.services.implementations.PersonDetailsServiceImpl;
+import ua.august.todoapp.services.implementations.TaskServiceImpl;
 
 import java.security.Principal;
 import java.util.List;
@@ -23,22 +23,22 @@ import java.util.List;
 @RequestMapping("/tasks")
 public class TaskController {
 
-    private final TaskService taskService;
-    private final PersonDetailsService personDetailsService;
+    private final TaskServiceImpl taskServiceImpl;
+    private final PersonDetailsServiceImpl personDetailsServiceImpl;
     private final ModelMapper modelMapper;
 
     @Autowired
-    public TaskController(TaskService taskService,
-                          ModelMapper modelMapper, PersonDetailsService personDetailsService) {
-        this.taskService = taskService;
+    public TaskController(TaskServiceImpl taskServiceImpl,
+                          ModelMapper modelMapper, PersonDetailsServiceImpl personDetailsServiceImpl) {
+        this.taskServiceImpl = taskServiceImpl;
         this.modelMapper = modelMapper;
-        this.personDetailsService = personDetailsService;
+        this.personDetailsServiceImpl = personDetailsServiceImpl;
     }
 
     @GetMapping
     public String index(Model model, Principal principal) {
-        Person person = personDetailsService.findByName(principal.getName());
-        List<Task> tasks = taskService.findByOwnerId(person.getId());
+        Person person = personDetailsServiceImpl.findByUsername(principal.getName());
+        List<Task> tasks = taskServiceImpl.findByOwnerId(person.getId());
         model.addAttribute("tasks", tasks);
         return "tasks/index";
     }
@@ -59,17 +59,17 @@ public class TaskController {
             return "tasks/new";
         }
 
-        Person person = personDetailsService.findByName(principal.getName());
-        taskService.save(task, person);
+        Person person = personDetailsServiceImpl.findByUsername(principal.getName());
+        taskServiceImpl.save(task, person);
         return "redirect:/tasks";
     }
 
     @GetMapping("/{id:[0-9]+}")
     public String show(@PathVariable("id") int id, Model model, Principal principal) {
 
-        Task task = taskService.findById(id);
+        Task task = taskServiceImpl.findById(id);
 
-        Person person = personDetailsService.findByName(principal.getName());
+        Person person = personDetailsServiceImpl.findByUsername(principal.getName());
         if (task.getOwner() == null || !task.getOwner().getId().equals(person.getId())) {
             throw new AccessDeniedException("У вас нет доступа к этой задаче");
         }
@@ -80,7 +80,7 @@ public class TaskController {
 
     @GetMapping("/{id:[0-9]+}/edit")
     public String editTask(@PathVariable("id") int id, Model model) {
-        Task task = taskService.findById(id);
+        Task task = taskServiceImpl.findById(id);
         model.addAttribute("task", convertToTaskDTO(task));
         prepareFormModel(model);
         return "tasks/edit";
@@ -97,14 +97,14 @@ public class TaskController {
         }
         Task task = convertToEntity(taskDTO);
         task.setId(id);
-        taskService.update(id, task);
+        taskServiceImpl.update(id, task);
         return "redirect:/tasks";
     }
 
 
     @DeleteMapping("/{id:[0-9]+}")
     public String delete(@PathVariable("id") int id) {
-        taskService.delete(id);
+        taskServiceImpl.delete(id);
         return "redirect:/tasks";
     }
 

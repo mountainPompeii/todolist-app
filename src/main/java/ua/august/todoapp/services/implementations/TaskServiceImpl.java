@@ -1,4 +1,4 @@
-package ua.august.todoapp.services;
+package ua.august.todoapp.services.implementations;
 
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -6,23 +6,20 @@ import org.springframework.stereotype.Service;
 import ua.august.todoapp.entity.Person;
 import ua.august.todoapp.entity.Task;
 import ua.august.todoapp.repositories.TaskRepository;
+import ua.august.todoapp.services.interfaces.TaskService;
 
 import java.util.List;
 import java.util.Optional;
 
 @Service
 @Transactional
-public class TaskService {
+public class TaskServiceImpl implements TaskService {
 
     private final TaskRepository taskRepository;
 
     @Autowired
-    public TaskService(TaskRepository taskRepository) {
+    public TaskServiceImpl(TaskRepository taskRepository) {
         this.taskRepository = taskRepository;
-    }
-
-    public List<Task> findAll() {
-        return taskRepository.findAll();
     }
 
     public Task findById(int id) {
@@ -30,7 +27,7 @@ public class TaskService {
         return foundBook.orElse(null);
     }
 
-    public List<Task> findByOwnerId(Long ownerId) {
+    public List<Task> findByOwnerId(Integer ownerId) {
         return taskRepository.findByOwnerId(ownerId);
     }
 

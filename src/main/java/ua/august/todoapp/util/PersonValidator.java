@@ -2,23 +2,22 @@ package ua.august.todoapp.util;
 
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
 import ua.august.todoapp.dto.PersonDTO;
-import ua.august.todoapp.services.PersonDetailsService;
+import ua.august.todoapp.services.implementations.PersonDetailsServiceImpl;
 
 import java.util.Objects;
 
 @Component
 public class PersonValidator implements Validator {
 
-    private final PersonDetailsService personDetailsService;
+    private final PersonDetailsServiceImpl personDetailsServiceImpl;
 
     @Autowired
-    public PersonValidator(PersonDetailsService personDetailsService) {
-        this.personDetailsService = personDetailsService;
+    public PersonValidator(PersonDetailsServiceImpl personDetailsServiceImpl) {
+        this.personDetailsServiceImpl = personDetailsServiceImpl;
     }
 
     @Override
@@ -30,7 +29,7 @@ public class PersonValidator implements Validator {
     public void validate(Object target, Errors errors) {
         PersonDTO personDTO = (PersonDTO) target;
 
-        if (personDetailsService.existsByUsername(personDTO.getUsername())) {
+        if (personDetailsServiceImpl.existsByUsername(personDTO.getUsername())) {
             errors.rejectValue("username",
                     "",
                     "Username is already taken");
