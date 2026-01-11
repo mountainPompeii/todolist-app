@@ -7,17 +7,18 @@ import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
 import ua.august.todoapp.dto.PersonDTO;
 import ua.august.todoapp.services.implementations.PersonDetailsServiceImpl;
+import ua.august.todoapp.services.interfaces.PersonDetailsService;
 
 import java.util.Objects;
 
 @Component
 public class PersonValidator implements Validator {
 
-    private final PersonDetailsServiceImpl personDetailsServiceImpl;
+    private final PersonDetailsService personDetailsService;
 
     @Autowired
-    public PersonValidator(PersonDetailsServiceImpl personDetailsServiceImpl) {
-        this.personDetailsServiceImpl = personDetailsServiceImpl;
+    public PersonValidator(PersonDetailsService personDetailsService) {
+        this.personDetailsService = personDetailsService;
     }
 
     @Override
@@ -29,7 +30,7 @@ public class PersonValidator implements Validator {
     public void validate(Object target, Errors errors) {
         PersonDTO personDTO = (PersonDTO) target;
 
-        if (personDetailsServiceImpl.existsByUsername(personDTO.getUsername())) {
+        if (personDetailsService.existsByUsername(personDTO.getUsername())) {
             errors.rejectValue("username",
                     "",
                     "Username is already taken");

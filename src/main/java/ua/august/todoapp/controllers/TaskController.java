@@ -1,7 +1,6 @@
 package ua.august.todoapp.controllers;
 
 import jakarta.validation.Valid;
-import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Controller;
@@ -24,14 +23,12 @@ import java.util.List;
 public class TaskController {
 
     private final TaskServiceImpl taskServiceImpl;
-    private final PersonDetailsServiceImpl personDetailsServiceImpl;
-    private final ModelMapper modelMapper;
+    private final PersonDetailsServiceImpl personDetailsServiceImpl;;
 
     @Autowired
     public TaskController(TaskServiceImpl taskServiceImpl,
-                          ModelMapper modelMapper, PersonDetailsServiceImpl personDetailsServiceImpl) {
+                          PersonDetailsServiceImpl personDetailsServiceImpl) {
         this.taskServiceImpl = taskServiceImpl;
-        this.modelMapper = modelMapper;
         this.personDetailsServiceImpl = personDetailsServiceImpl;
     }
 
@@ -51,7 +48,7 @@ public class TaskController {
     }
 
     @PostMapping
-    public String addTask(@ModelAttribute("task") @Valid Task task,
+    public String addTask(@ModelAttribute("task") @Valid TaskDTO taskDTO,
                           BindingResult bindingResult,
                           Model model, Principal principal) {
         if (bindingResult.hasErrors()) {
@@ -60,7 +57,7 @@ public class TaskController {
         }
 
         Person person = personDetailsServiceImpl.findByUsername(principal.getName());
-        taskServiceImpl.save(task, person);
+        taskServiceImpl.save(taskDTO, person);
         return "redirect:/tasks";
     }
 
@@ -80,8 +77,8 @@ public class TaskController {
 
     @GetMapping("/{id:[0-9]+}/edit")
     public String editTask(@PathVariable("id") int id, Model model) {
-        Task task = taskServiceImpl.findById(id);
-        model.addAttribute("task", convertToTaskDTO(task));
+        Task taskDTO = taskServiceImpl.findById(id);
+        model.addAttribute("task", taskDTO);
         prepareFormModel(model);
         return "tasks/edit";
     }
@@ -95,9 +92,8 @@ public class TaskController {
             prepareFormModel(model);
             return "tasks/edit";
         }
-        Task task = convertToEntity(taskDTO);
-        task.setId(id);
-        taskServiceImpl.update(id, task);
+        taskDTO.setId(id);
+        taskServiceImpl.update(id, taskDTO);
         return "redirect:/tasks";
     }
 
@@ -108,12 +104,6 @@ public class TaskController {
         return "redirect:/tasks";
     }
 
-    private Task convertToEntity(TaskDTO taskDTO) {
-        return  modelMapper.map(taskDTO, Task.class);
-    }
-    private TaskDTO convertToTaskDTO(Task task) {
-        return modelMapper.map(task, TaskDTO.class);
-    }
     private void prepareFormModel(Model model) {
         model.addAttribute("statuses", Status.values());
         model.addAttribute("priorities", Priority.values());

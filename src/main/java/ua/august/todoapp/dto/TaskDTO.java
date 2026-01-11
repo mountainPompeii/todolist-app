@@ -1,5 +1,7 @@
 package ua.august.todoapp.dto;
 
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
@@ -14,15 +16,20 @@ public class TaskDTO {
 
     private Integer id;
 
-    @NotBlank(message = "Название задачи не может быть пустым")
-    @Size(max = 255, message = "Название задачи не может быть длиннее 255 символов")
+    @NotBlank(message = "Task title cannot be empty")
+    @Size(max = 255, message = "Task title cannot be longer than 255 characters")
     private String title;
 
-    @Size(max = 1000, message = "Описание не может быть длиннее 1000 символов")
+    @Size(max = 1000, message = "Description cannot be longer than 1000 characters")
     private String description;
 
+    @Enumerated(EnumType.STRING)
     private Status status;
+
+    @Enumerated(EnumType.STRING)
     private Priority priority;
+
     private LocalDateTime createdAt;
 
+    private Integer ownerId;
 }

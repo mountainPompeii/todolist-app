@@ -22,6 +22,7 @@ public class PersonDetailsServiceImpl implements UserDetailsService, PersonDetai
         this.peopleRepository = peopleRepository;
     }
 
+    @Override
     public Person findByUsername(String username){
         return peopleRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("Username not found!"));
@@ -39,6 +40,7 @@ public class PersonDetailsServiceImpl implements UserDetailsService, PersonDetai
 
     }
 
+    @Override
     public boolean existsByUsername(String username) {
         return peopleRepository.existsByUsername(username);
     }

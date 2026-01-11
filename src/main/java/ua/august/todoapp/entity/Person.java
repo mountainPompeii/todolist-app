@@ -21,11 +21,9 @@ public class Person {
     private Integer id;
 
     @Column(name = "username")
-    @NotBlank(message = "Username is required")
     private String username;
 
     @Column(name = "password")
-    @NotBlank(message = "Password is required")
     private String password;
 
     @OneToMany(mappedBy = "owner", fetch = FetchType.EAGER)

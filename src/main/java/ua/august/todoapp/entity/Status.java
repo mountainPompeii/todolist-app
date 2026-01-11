@@ -1,9 +1,9 @@
 package ua.august.todoapp.entity;
 
 public enum Status {
-    TODO("Новая"),
-    IN_PROGRESS("В процессе"),
-    DONE("Сделана");
+    TODO("New"),
+    IN_PROGRESS("In Progress"),
+    DONE("Completed"),;
 
     private final String displayName;
 

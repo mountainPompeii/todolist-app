@@ -1,9 +1,9 @@
 package ua.august.todoapp.entity;
 
 public enum Priority {
-    LOW("Низкий"),
-    MEDIUM("Средний"),
-    HIGH("Высокий");
+    LOW("Low"),
+    MEDIUM("Medium"),
+    HIGH("High");
 
     private final String displayName;
 
