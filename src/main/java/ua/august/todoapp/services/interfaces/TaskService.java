@@ -1,14 +1,13 @@
 package ua.august.todoapp.services.interfaces;
 
-import ua.august.todoapp.entity.Person;
 import ua.august.todoapp.entity.Task;
 
 import java.util.List;
 
-public interface TaskService {
-     Task findById(int id);
-     List<Task> findByOwnerId(Integer id);
-     void save(Task task, Person person);
-     void update(int id, Task updatedTask);
+public interface TaskService<T,P> {
+     T findById(int id, Integer ownerId);
+     List<T> findByOwnerId(Integer id);
+     void save(T task, P owner);
+     void update(int id, T updatedTask);
      void delete(int id);
 }
