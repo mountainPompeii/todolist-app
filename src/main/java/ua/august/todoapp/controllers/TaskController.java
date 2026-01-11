@@ -2,7 +2,6 @@ package ua.august.todoapp.controllers;
 
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -11,7 +10,6 @@ import ua.august.todoapp.dto.TaskDTO;
 import ua.august.todoapp.entity.Person;
 import ua.august.todoapp.entity.Priority;
 import ua.august.todoapp.entity.Status;
-import ua.august.todoapp.entity.Task;
 import ua.august.todoapp.services.implementations.PersonDetailsServiceImpl;
 import ua.august.todoapp.services.implementations.TaskServiceImpl;
 
@@ -35,7 +33,7 @@ public class TaskController {
     @GetMapping
     public String index(Model model, Principal principal) {
         Person person = personDetailsServiceImpl.findByUsername(principal.getName());
-        List<Task> tasks = taskServiceImpl.findByOwnerId(person.getId());
+        List<TaskDTO> tasks = taskServiceImpl.findByOwnerId(person.getId());
         model.addAttribute("tasks", tasks);
         return "tasks/index";
     }
@@ -63,21 +61,16 @@ public class TaskController {
 
     @GetMapping("/{id:[0-9]+}")
     public String show(@PathVariable("id") int id, Model model, Principal principal) {
-
-        Task task = taskServiceImpl.findById(id);
-
         Person person = personDetailsServiceImpl.findByUsername(principal.getName());
-        if (task.getOwner() == null || !task.getOwner().getId().equals(person.getId())) {
-            throw new AccessDeniedException("У вас нет доступа к этой задаче");
-        }
-
-        model.addAttribute("task", task);
+        TaskDTO taskDTO = taskServiceImpl.findById(id, person.getId());
+        model.addAttribute("task", taskDTO);
         return "tasks/show";
     }
 
     @GetMapping("/{id:[0-9]+}/edit")
-    public String editTask(@PathVariable("id") int id, Model model) {
-        Task taskDTO = taskServiceImpl.findById(id);
+    public String editTask(@PathVariable("id") int id, Model model, Principal principal) {
+        Person person = personDetailsServiceImpl.findByUsername(principal.getName());
+        TaskDTO taskDTO = taskServiceImpl.findById(id, person.getId());
         model.addAttribute("task", taskDTO);
         prepareFormModel(model);
         return "tasks/edit";
