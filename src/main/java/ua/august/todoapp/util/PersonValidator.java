@@ -1,14 +1,11 @@
 package ua.august.todoapp.util;
 
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 import org.springframework.validation.Validator;
 import ua.august.todoapp.dto.PersonDTO;
-import ua.august.todoapp.services.implementations.PersonDetailsServiceImpl;
 import ua.august.todoapp.services.interfaces.PersonDetailsService;
-
 import java.util.Objects;
 
 @Component

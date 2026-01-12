@@ -26,4 +26,10 @@ public class GlobalExceptionHandler {
         log.warn("Task not found: {}", e.getMessage());
         return problemDetail(HttpStatus.NOT_FOUND, "Task not found", e.getMessage());
     }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ProblemDetail handleAccessDenied(AccessDeniedException e) {
+        log.warn("Access denied: {}", e.getMessage());
+        return problemDetail(HttpStatus.FORBIDDEN, "Access denied", e.getMessage());
+    }
 }

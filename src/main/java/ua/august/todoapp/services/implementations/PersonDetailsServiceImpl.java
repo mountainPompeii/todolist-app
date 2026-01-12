@@ -1,5 +1,6 @@
 package ua.august.todoapp.services.implementations;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -9,9 +10,9 @@ import ua.august.todoapp.entity.Person;
 import ua.august.todoapp.repositories.PeopleRepository;
 import ua.august.todoapp.security.PersonDetails;
 import ua.august.todoapp.services.interfaces.PersonDetailsService;
-
 import java.util.Optional;
 
+@Slf4j
 @Service
 public class PersonDetailsServiceImpl implements UserDetailsService, PersonDetailsService {
 
@@ -24,12 +25,14 @@ public class PersonDetailsServiceImpl implements UserDetailsService, PersonDetai
 
     @Override
     public Person findByUsername(String username){
+        log.info("Finding user with username: {}", username);
         return peopleRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("Username not found!"));
     }
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        log.info("Loading user by username: {}", username);
        Optional<Person> person = peopleRepository.findByUsername(username);
 
        if (person.isEmpty()) {
@@ -42,6 +45,7 @@ public class PersonDetailsServiceImpl implements UserDetailsService, PersonDetai
 
     @Override
     public boolean existsByUsername(String username) {
+        log.debug("Checking if username exists: {}", username);
         return peopleRepository.existsByUsername(username);
     }
 
