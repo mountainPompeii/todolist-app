@@ -58,10 +58,13 @@ public class TaskServiceImpl implements TaskService <TaskDTO, Person> {
 
     @Override
     @Transactional
-    public void update(int id, TaskDTO updatedTaskDTO) {
+    public void update(int id, TaskDTO updatedTaskDTO, int ownerId) {
         log.info("Updating task with id {}", id);
         Task task = taskRepository.findById(id)
                         .orElseThrow(() -> new TaskNotFoundException(id));
+        if (task.getOwner() == null || !task.getOwner().getId().equals(ownerId)) {
+            throw new AccessDeniedException(id);
+        }
         taskMapper.updateTaskFromDTO(updatedTaskDTO, task);
         taskRepository.save(task);
         log.info("Task with id {} updated successfully", id);
@@ -69,8 +72,13 @@ public class TaskServiceImpl implements TaskService <TaskDTO, Person> {
 
     @Override
     @Transactional
-    public void delete(int id) {
+    public void delete(int id, int ownerId) {
         log.info("Deleting task with id {}", id);
+        Task task = taskRepository.findById(id)
+                .orElseThrow(() -> new TaskNotFoundException(id));
+        if (task.getOwner() == null || !task.getOwner().getId().equals(ownerId)) {
+            throw new AccessDeniedException(id);
+        }
         taskRepository.deleteById(id);
         log.info("Task with id {} deleted successfully", id);
     }

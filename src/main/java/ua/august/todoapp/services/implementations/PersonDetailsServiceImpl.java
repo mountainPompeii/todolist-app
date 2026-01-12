@@ -21,6 +21,7 @@ public class PersonDetailsServiceImpl implements UserDetailsService, PersonDetai
     @Autowired
     public PersonDetailsServiceImpl(PeopleRepository peopleRepository) {
         this.peopleRepository = peopleRepository;
+
     }
 
     @Override

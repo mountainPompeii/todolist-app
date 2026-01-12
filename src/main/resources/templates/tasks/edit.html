@@ -13,11 +13,15 @@
     <p>
         <label>Title: </label>
         <input type="text" th:field="*{title}"/>
+        <span class="error" th:if="${#fields.hasErrors('title')}"
+              th:errors="*{title}" style="color:red">Title Error</span>
     </p>
 
     <p>
         <label>Description: </label>
         <textarea th:field="*{description}"></textarea>
+        <span class="error" th:if="${#fields.hasErrors('description')}"
+              th:errors="*{description}" style="color:red">Description Error</span>
     </p>
 
     <p>
