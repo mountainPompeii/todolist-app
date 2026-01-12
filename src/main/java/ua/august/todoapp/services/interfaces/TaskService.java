@@ -1,7 +1,5 @@
 package ua.august.todoapp.services.interfaces;
 
-import ua.august.todoapp.entity.Task;
-
 import java.util.List;
 
 public interface TaskService<T,P> {

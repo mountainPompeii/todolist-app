@@ -12,7 +12,6 @@ import ua.august.todoapp.entity.Priority;
 import ua.august.todoapp.entity.Status;
 import ua.august.todoapp.services.implementations.PersonDetailsServiceImpl;
 import ua.august.todoapp.services.implementations.TaskServiceImpl;
-
 import java.security.Principal;
 import java.util.List;
 

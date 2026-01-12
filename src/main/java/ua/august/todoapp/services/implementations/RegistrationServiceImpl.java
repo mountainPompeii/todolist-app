@@ -1,5 +1,6 @@
 package ua.august.todoapp.services.implementations;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -10,6 +11,7 @@ import ua.august.todoapp.mapper.PersonMapper;
 import ua.august.todoapp.repositories.PeopleRepository;
 import ua.august.todoapp.services.interfaces.RegistrationService;
 
+@Slf4j
 @Service
 public class RegistrationServiceImpl implements RegistrationService {
 
@@ -28,6 +30,8 @@ public class RegistrationServiceImpl implements RegistrationService {
     @Transactional
     public void register(PersonDTO personDTO) {
 
+        log.info("Registering user with username: {}", personDTO.getUsername());
+
         Person person = personMapper.toPerson(personDTO);
 
         String password = personDTO.getPassword();
@@ -37,5 +41,7 @@ public class RegistrationServiceImpl implements RegistrationService {
         person.setPassword(encodedPassword);
 
         peopleRepository.save(person);
+
+        log.info("New person was registered successfully with username: {}", person.getUsername());
     }
 }
