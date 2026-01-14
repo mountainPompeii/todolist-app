@@ -7,12 +7,14 @@ import ua.august.todoapp.entity.Person;
 import java.util.Collection;
 import java.util.List;
 
+
 public class PersonDetails implements UserDetails {
 
     private final Person person;
 
     public PersonDetails(Person person) {
         this.person = person;
+
     }
 
     @Override
@@ -53,4 +55,6 @@ public class PersonDetails implements UserDetails {
     public Person getPerson() {
         return this.person;
     }
+
+
 }

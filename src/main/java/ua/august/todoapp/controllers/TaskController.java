@@ -2,6 +2,7 @@ package ua.august.todoapp.controllers;
 
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -10,8 +11,10 @@ import ua.august.todoapp.dto.TaskDTO;
 import ua.august.todoapp.entity.Person;
 import ua.august.todoapp.entity.Priority;
 import ua.august.todoapp.entity.Status;
-import ua.august.todoapp.services.implementations.PersonDetailsServiceImpl;
-import ua.august.todoapp.services.implementations.TaskServiceImpl;
+import ua.august.todoapp.security.PersonDetails;
+import ua.august.todoapp.services.interfaces.PersonDetailsService;
+import ua.august.todoapp.services.interfaces.TaskService;
+
 import java.security.Principal;
 import java.util.List;
 
@@ -19,20 +22,25 @@ import java.util.List;
 @RequestMapping("/tasks")
 public class TaskController {
 
-    private final TaskServiceImpl taskServiceImpl;
-    private final PersonDetailsServiceImpl personDetailsServiceImpl;;
+    private final TaskService taskService;
+    private final PersonDetailsService personDetailsService;
 
     @Autowired
-    public TaskController(TaskServiceImpl taskServiceImpl,
-                          PersonDetailsServiceImpl personDetailsServiceImpl) {
-        this.taskServiceImpl = taskServiceImpl;
-        this.personDetailsServiceImpl = personDetailsServiceImpl;
+    public TaskController(TaskService taskService,
+                          PersonDetailsService personDetailsService) {
+        this.taskService = taskService;
+        this.personDetailsService = personDetailsService;
+    }
+
+    private void prepareFormModel(Model model) {
+        model.addAttribute("statuses", Status.values());
+        model.addAttribute("priorities", Priority.values());
     }
 
     @GetMapping
     public String index(Model model, Principal principal) {
-        Person person = personDetailsServiceImpl.findByUsername(principal.getName());
-        List<TaskDTO> tasks = taskServiceImpl.findByOwnerId(person.getId());
+        Person person = personDetailsService.findByUsername(principal.getName());
+        List<TaskDTO> tasks = taskService.findByOwnerId(person.getId());
         model.addAttribute("tasks", tasks);
         return "tasks/index";
     }
@@ -53,23 +61,23 @@ public class TaskController {
             return "tasks/new";
         }
 
-        Person person = personDetailsServiceImpl.findByUsername(principal.getName());
-        taskServiceImpl.save(taskDTO, person);
+        Person person = personDetailsService.findByUsername(principal.getName());
+        taskService.save(taskDTO, person);
         return "redirect:/tasks";
     }
 
     @GetMapping("/{id:[0-9]+}")
     public String show(@PathVariable("id") int id, Model model, Principal principal) {
-        Person person = personDetailsServiceImpl.findByUsername(principal.getName());
-        TaskDTO taskDTO = taskServiceImpl.findById(id, person.getId());
+        Person person = personDetailsService.findByUsername(principal.getName());
+        TaskDTO taskDTO = taskService.findById(id, person.getId());
         model.addAttribute("task", taskDTO);
         return "tasks/show";
     }
 
     @GetMapping("/{id:[0-9]+}/edit")
     public String editTask(@PathVariable("id") int id, Model model, Principal principal) {
-        Person person = personDetailsServiceImpl.findByUsername(principal.getName());
-        TaskDTO taskDTO = taskServiceImpl.findById(id, person.getId());
+        Person person = personDetailsService.findByUsername(principal.getName());
+        TaskDTO taskDTO = taskService.findById(id, person.getId());
         model.addAttribute("task", taskDTO);
         prepareFormModel(model);
         return "tasks/edit";
@@ -79,25 +87,30 @@ public class TaskController {
     public String update(@PathVariable("id") int id,
                          @ModelAttribute("task") @Valid TaskDTO taskDTO,
                          BindingResult bindingResult,
+                         @AuthenticationPrincipal PersonDetails personDetails,
                          Model model) {
         if (bindingResult.hasErrors()) {
             prepareFormModel(model);
             return "tasks/edit";
         }
+
         taskDTO.setId(id);
-        taskServiceImpl.update(id, taskDTO);
+
+        int currentOwnerId = personDetails.getPerson().getId();
+
+        taskService.update(id, taskDTO, currentOwnerId);
         return "redirect:/tasks";
     }
 
 
     @DeleteMapping("/{id:[0-9]+}")
-    public String delete(@PathVariable("id") int id) {
-        taskServiceImpl.delete(id);
+    public String delete(@PathVariable("id") int id, @AuthenticationPrincipal PersonDetails personDetails) {
+
+        int currentOwnerId = personDetails.getPerson().getId();
+
+        taskService.delete(id, currentOwnerId);
+
         return "redirect:/tasks";
     }
 
-    private void prepareFormModel(Model model) {
-        model.addAttribute("statuses", Status.values());
-        model.addAttribute("priorities", Priority.values());
-    }
 }
