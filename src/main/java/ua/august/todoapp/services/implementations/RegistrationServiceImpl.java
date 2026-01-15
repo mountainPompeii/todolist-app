@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ua.august.todoapp.dto.PersonDTO;
 import ua.august.todoapp.entity.Person;
+import ua.august.todoapp.entity.Role;
 import ua.august.todoapp.mapper.PersonMapper;
 import ua.august.todoapp.repositories.PeopleRepository;
 import ua.august.todoapp.services.interfaces.RegistrationService;
@@ -28,20 +29,22 @@ public class RegistrationServiceImpl implements RegistrationService {
 
     @Override
     @Transactional
-    public void register(PersonDTO personDTO) {
+    public Person register(PersonDTO personDTO) {
 
         log.info("Registering user with username: {}", personDTO.getUsername());
 
         Person person = personMapper.toPerson(personDTO);
 
+        person.setRole(Role.ROLE_USER);
+
         String password = personDTO.getPassword();
-
         String encodedPassword = passwordEncoder.encode(password);
-
         person.setPassword(encodedPassword);
 
-        peopleRepository.save(person);
+        Person savedPerson = peopleRepository.save(person);
 
         log.info("New person was registered successfully with username: {}", person.getUsername());
+
+        return savedPerson;
     }
 }

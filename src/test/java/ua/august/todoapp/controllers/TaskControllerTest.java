@@ -1,18 +1,21 @@
 package ua.august.todoapp.controllers;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import ua.august.todoapp.dto.TaskDTO;
 import ua.august.todoapp.entity.Person;
+import ua.august.todoapp.entity.Priority;
+import ua.august.todoapp.entity.Status;
 import ua.august.todoapp.exceptions.AccessDeniedException;
 import ua.august.todoapp.security.PersonDetails;
 import ua.august.todoapp.services.interfaces.PersonDetailsService;
 import ua.august.todoapp.services.interfaces.TaskService;
-
 
 import java.util.List;
 
@@ -28,6 +31,9 @@ class TaskControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @MockitoBean
     private TaskService taskService;
@@ -48,13 +54,12 @@ class TaskControllerTest {
 
     @Test
     void shouldReturn403WhenDeletingNotOwnedTask () throws Exception {
-
         // arrange
         doThrow(new AccessDeniedException(1))
                 .when(taskService).delete(eq(1), eq(2));
 
         // act and assert
-        mockMvc.perform(delete("/tasks/1")
+        mockMvc.perform(delete("/api/tasks/1")
                         .with(user(testPersonDetails))
                         .with(csrf()))
                 .andExpect(status().isForbidden());
@@ -64,12 +69,12 @@ class TaskControllerTest {
     @Test
     void shouldDeleteTaskSuccessfully() throws Exception {
         // act
-        mockMvc.perform(delete("/tasks/1")
+        mockMvc.perform(delete("/api/tasks/1")
                         .with(user(testPersonDetails))
                         .with(csrf()))
                 // assert
-                .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("/tasks"));
+                .andExpect(status().isOk());
+
 
         verify(taskService).delete(eq(1), eq(2));
     }
@@ -77,93 +82,114 @@ class TaskControllerTest {
     @Test
     void shouldReturn403WhenUpdatingNotOwnedTask () throws Exception {
         // arrange
+        TaskDTO taskError = new TaskDTO();
+        taskError.setTitle("test");
+        taskError.setDescription("test");
+        taskError.setPriority(Priority.HIGH);
+        taskError.setStatus(Status.DONE);
+        taskError.setOwnerId(1);
+
         doThrow(new AccessDeniedException(1))
                 .when(taskService).update(eq(1), any(), eq(2));
 
         // act and assert
-        mockMvc.perform(patch("/tasks/1")
-                        .param("title", "title")
-                        .param("description", "description")
-                        .param("priority", "HIGH")
-                        .param("status", "DONE")
-
+        mockMvc.perform(patch("/api/tasks/1")
                         .with(user(testPersonDetails))
-                        .with(csrf()))
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(taskError)))
                         .andExpect(status().isForbidden());
     }
     @Test
     void shouldUpdateTaskSuccessfully() throws Exception {
+        // arrange
+        TaskDTO updateData = new TaskDTO();
+        updateData.setTitle("title1");
+        updateData.setDescription("description1");
+        updateData.setPriority(Priority.LOW);
+        updateData.setStatus(Status.DONE);
 
         // act
-        mockMvc.perform(patch("/tasks/1")
-                        .param("title", "Updated Title")
-                        .param("description", "Updated Desc")
-                        .param("priority", "LOW")
-                        .param("status", "DONE")
+        mockMvc.perform(patch("/api/tasks/1")
                         .with(user(testPersonDetails))
-                        .with(csrf()))
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString((updateData))))
                 // assert
-                .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("/tasks"));
+                .andExpect(status().isOk());
 
         verify(taskService).update(eq(1), any(), eq(2));
     }
 
     @Test
-    void shouldCreateTaskAndRedirect() throws Exception {
+    void shouldCreateTaskSuccessfully() throws Exception {
         // arrange
         when(personDetailsService.findByUsername(testPersonDetails.getUsername()))
                 .thenReturn(testPersonDetails.getPerson());
 
+        TaskDTO newTask = new TaskDTO();
+        newTask.setTitle("title");
+        newTask.setDescription("description");
+        newTask.setPriority(Priority.LOW);
+        newTask.setStatus(Status.DONE);
+
+
         // act
-        mockMvc.perform(post("/tasks")
-                        .param("title", "New Task")
-                        .param("description", "Description")
-                        .param("priority", "HIGH")
-                        .param("status", "DONE")
+        mockMvc.perform(post("/api/tasks")
                         .with(user(testPersonDetails))
-                        .with(csrf()))
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(newTask)))
                 // assert
-                .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("/tasks"));
+                .andExpect(status().isOk());
 
         verify(taskService).save(any(), eq(testPersonDetails.getPerson()));
     }
 
     @Test
-    void shouldReturnTaskList() throws Exception {
+    void shouldReturnTaskListJson() throws Exception {
 
         // arrange
         when(personDetailsService.findByUsername(testPersonDetails.getUsername()))
                 .thenReturn(testPersonDetails.getPerson());
 
+        TaskDTO newTask = new TaskDTO();
+        newTask.setId(1);
+        newTask.setTitle("title");
+        newTask.setDescription("description");
+        newTask.setPriority(Priority.LOW);
+        newTask.setStatus(Status.DONE);
+
         when(taskService.findByOwnerId(testPersonDetails.getPerson().getId()))
-                .thenReturn(List.of());
+                .thenReturn(List.of(newTask));
 
         // act
-        mockMvc.perform(get("/tasks")
+        mockMvc.perform(get("/api/tasks")
                         .with(user(testPersonDetails)))
                 // assert
                 .andExpect(status().isOk())
-                .andExpect(view().name("tasks/index"))
-                .andExpect(model().attributeExists("tasks"));
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$[0].id").value(1))
+                .andExpect(jsonPath("$[0].title").value("title"));
 
 
         verify(taskService).findByOwnerId(testPersonDetails.getPerson().getId());
     }
 
     @Test
-    void shouldReturnFormWithErrorsWhenCreatingInvalidTask() throws Exception {
+    void shouldReturnBadRequestWhenCreatingInvalidTask() throws Exception {
+        // arrange
+        TaskDTO taskError1 = new TaskDTO();
+        taskError1.setTitle("");
         // act
-        mockMvc.perform(post("/tasks")
-                        .param("title", "")
-                        .param("description", "Description")
+        mockMvc.perform(post("/api/tasks")
                         .with(user(testPersonDetails))
-                        .with(csrf()))
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(taskError1)))
                 // assert
-                .andExpect(status().isOk())
-                .andExpect(view().name("tasks/new"))
-                .andExpect(model().attributeHasFieldErrors("task", "title"));
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.title").exists());
 
         verify(taskService, never()).save(any(), any());
     }
@@ -182,12 +208,10 @@ class TaskControllerTest {
                 .thenReturn(mockTask);
 
         // act
-        mockMvc.perform(get("/tasks/1")
+        mockMvc.perform(get("/api/tasks/1")
                         .with(user(testPersonDetails)))
                 // assert
-                .andExpect(status().isOk())
-                .andExpect(view().name("tasks/show"))
-                .andExpect(model().attribute("task", mockTask));
+                .andExpect(status().isOk());
 
         verify(taskService).findById(eq(1), eq(testPersonDetails.getPerson().getId()));
     }

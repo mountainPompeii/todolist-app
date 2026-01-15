@@ -8,10 +8,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ua.august.todoapp.dto.TaskDTO;
-import ua.august.todoapp.entity.Person;
-import ua.august.todoapp.entity.Priority;
-import ua.august.todoapp.entity.Status;
-import ua.august.todoapp.entity.Task;
+import ua.august.todoapp.entity.*;
 import ua.august.todoapp.exceptions.AccessDeniedException;
 import ua.august.todoapp.exceptions.TaskNotFoundException;
 import ua.august.todoapp.mapper.TaskMapper;
@@ -44,7 +41,7 @@ class TaskServiceImplTest {
     @BeforeEach
     void setUp() {
         List<Task> tasks = new ArrayList<>();
-        person = new Person(1, "Test_Username", "Test_Password",tasks);
+        person = new Person(1, "Test_Username", "Test_Password", Role.ROLE_USER, tasks);
         task = new Task(1, "Title", "Description", Status.DONE, Priority.HIGH, person, LocalDateTime.now());
         taskDTO = new TaskDTO(1 , "Title", "Description", Status.DONE, Priority.HIGH, LocalDateTime.now(), 1);
     }
@@ -106,7 +103,7 @@ class TaskServiceImplTest {
     @DisplayName("Testing method findById if Task doesn't belong to User")
     void shouldThrowExceptionWhenDoesNotBelongToUser() {
 
-        task.setOwner(new  Person(2, "Test_Username", "Test_Password", List.of()));
+        task.setOwner(new  Person(2, "Test_Username", "Test_Password", Role.ROLE_USER, List.of()));
 
         // arrange
         when(taskRepository.findById(task.getId())).thenReturn(Optional.of(task));

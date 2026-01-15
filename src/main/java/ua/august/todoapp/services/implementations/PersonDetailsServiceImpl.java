@@ -14,7 +14,7 @@ import java.util.Optional;
 
 @Slf4j
 @Service
-public class PersonDetailsServiceImpl implements UserDetailsService, PersonDetailsService {
+public class PersonDetailsServiceImpl implements PersonDetailsService {
 
     private final PeopleRepository peopleRepository;
 

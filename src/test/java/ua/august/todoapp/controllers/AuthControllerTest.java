@@ -1,31 +1,38 @@
 package ua.august.todoapp.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
-import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.http.MediaType;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import ua.august.todoapp.dto.PersonDTO;
+import ua.august.todoapp.entity.Person;
+import ua.august.todoapp.security.JwtService;
 import ua.august.todoapp.services.interfaces.PersonDetailsService;
 import ua.august.todoapp.services.interfaces.RegistrationService;
 import ua.august.todoapp.util.PersonValidator;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(AuthController.class)
+@AutoConfigureMockMvc(addFilters = false)
 @Import(PersonValidator.class)
 class AuthControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @MockitoBean
     private RegistrationService registrationService;
@@ -33,141 +40,134 @@ class AuthControllerTest {
     @MockitoBean
     private PersonDetailsService personDetailsService;
 
-    @Autowired
-    private ObjectMapper objectMapper;
+    @MockitoBean
+    private JwtService jwtService;
 
-    @BeforeEach
-    public void setup() {
+    @MockitoBean
+    private AuthenticationManager authenticationManager;
 
-    }
 
     @Test
-    @WithMockUser
-    void shouldReturnRegistrationViewWithErrorsWhenUsernameIsEmpty() throws Exception {
-        mockMvc.perform(post("http://localhost:8080/auth/registration")
-                .param("username", "")
-                .param("password", "password")
-                .param("confirmPassword", "password")
-                .with(csrf()))
-                .andExpect(status().isOk())
-                .andExpect(view().name("auth/registration"))
-                .andExpect(model().attributeHasFieldErrors("person", "username"));
+    void shouldReturnBadRequestWhenUsernameIsEmpty() throws Exception {
+        PersonDTO personDTO = new PersonDTO();
+        personDTO.setUsername("");
+        personDTO.setPassword("password");
+        personDTO.setConfirmPassword("password");
+
+        mockMvc.perform(post("/api/auth/registration")
+
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(personDTO)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors.username").exists());
 
         verify(registrationService, never()).register(any());
     }
 
     @Test
-    @WithMockUser
-    void shouldReturnRegistrationViewWithErrorsWhenPasswordIsEmpty() throws Exception {
-        mockMvc.perform(post("http://localhost:8080/auth/registration")
-                        .param("username", "username")
-                        .param("password", "")
-                        .param("confirmPassword", "password")
-                        .with(csrf()))
-                .andExpect(status().isOk())
-                .andExpect(view().name("auth/registration"))
-                .andExpect(model().attributeHasFieldErrors("person", "password"));
+    void shouldReturnBadRequestWhenPasswordIsEmpty() throws Exception {
+        PersonDTO personDTO = new PersonDTO();
+        personDTO.setUsername("username");
+        personDTO.setPassword("");
+        personDTO.setConfirmPassword("password");
+
+        mockMvc.perform(post("/api/auth/registration")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(personDTO)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors.password").exists());
 
         verify(registrationService, never()).register(any());
     }
 
     @Test
-    @WithMockUser
-    void shouldReturnRegistrationViewWithErrorsWhenPasswordIsLessThan3Symbols() throws Exception {
-        mockMvc.perform(post("http://localhost:8080/auth/registration")
-                        .param("username", "username")
-                        .param("password", "123")
-                        .param("confirmPassword", "123456")
-                        .with(csrf()))
-                .andExpect(status().isOk())
-                .andExpect(view().name("auth/registration"))
-                .andExpect(model().attributeHasFieldErrors("person", "password"));
+    void shouldReturnBadRequestWhenPasswordIsLessThan3Symbols() throws Exception {
+        PersonDTO personDTO = new PersonDTO();
+        personDTO.setUsername("username");
+        personDTO.setPassword("12");
+        personDTO.setConfirmPassword("123456");
+
+        mockMvc.perform(post("/api/auth/registration")
+
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(personDTO)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors.password").exists());
 
         verify(registrationService, never()).register(any());
     }
 
     @Test
-    @WithMockUser
-    void shouldReturnRegistrationViewWithErrorsWhenConfirmedPasswordIsLessThan3Symbols() throws Exception {
-        mockMvc.perform(post("http://localhost:8080/auth/registration")
-                        .param("username", "username")
-                        .param("password", "123456")
-                        .param("confirmPassword", "123")
-                        .with(csrf()))
-                .andExpect(status().isOk())
-                .andExpect(view().name("auth/registration"))
-                .andExpect(model().attributeHasFieldErrors("person", "confirmPassword"));
+    void shouldReturnBadRequestWhenConfirmedPasswordIsLessThan3Symbols() throws Exception {
+        PersonDTO personDTO = new PersonDTO();
+        personDTO.setUsername("username");
+        personDTO.setPassword("123456");
+        personDTO.setConfirmPassword("12");
+
+        mockMvc.perform(post("/api/auth/registration")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(personDTO)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors.confirmPassword").exists());
 
         verify(registrationService, never()).register(any());
     }
 
     @Test
-    @WithMockUser
-    void shouldReturnRegistrationViewWithErrorsWhenPasswordsDoNotMatch() throws Exception {
-        mockMvc.perform(post("http://localhost:8080/auth/registration")
-                        .param("username", "username")
-                        .param("password", "1235678")
-                        .param("confirmPassword", "123456")
-                        .with(csrf()))
-                .andExpect(status().isOk())
-                .andExpect(view().name("auth/registration"))
-                .andExpect(model().attributeHasFieldErrors("person", "confirmPassword"));
+    void shouldReturnBadRequestWhenPasswordsDoNotMatch() throws Exception {
+        PersonDTO personDTO = new PersonDTO();
+        personDTO.setUsername("username");
+        personDTO.setPassword("123456");
+        personDTO.setConfirmPassword("654321");
+
+        mockMvc.perform(post("/api/auth/registration")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(personDTO)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors.confirmPassword").exists());
 
         verify(registrationService, never()).register(any());
     }
 
     @Test
-    @WithMockUser
-    void shouldReturnErrorWhenUsernameIsTaken() throws Exception {
+    void shouldReturnBadRequestWhenUsernameIsTaken() throws Exception {
+        PersonDTO personDTO = new PersonDTO();
+        personDTO.setUsername("existingUser");
+        personDTO.setPassword("123456");
+        personDTO.setConfirmPassword("123456");
 
-        String existedUsername = "username";
+        when(personDetailsService.existsByUsername("existingUser")).thenReturn(true);
 
-        when(personDetailsService.existsByUsername(existedUsername)).thenReturn(true);
-
-        mockMvc.perform(post("http://localhost:8080/auth/registration")
-                .param("username", existedUsername)
-                .param("password", "123456")
-                .param("confirmPassword", "123456")
-                .with(csrf()))
-
-                .andExpect(status().isOk())
-                .andExpect(view().name("auth/registration"))
-                .andExpect(model().attributeHasFieldErrors("person", "username"));
+        mockMvc.perform(post("/api/auth/registration")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(personDTO)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errors.username").exists());
 
         verify(registrationService, never()).register(any());
     }
 
-
-
     @Test
-    @WithMockUser
-    void shouldShowRegistrationForm() throws Exception {
-        mockMvc.perform(get("http://localhost:8080/auth/registration"))
+    void shouldRegisterAndReturnTokenWhenDataIsValid() throws Exception {
+        PersonDTO personDTO = new PersonDTO();
+        personDTO.setUsername("newUser");
+        personDTO.setPassword("password");
+        personDTO.setConfirmPassword("password");
+
+        Person savedPerson = new Person();
+        savedPerson.setUsername("newUser");
+        savedPerson.setId(1);
+
+        when(personDetailsService.existsByUsername("newUser")).thenReturn(false);
+        when(registrationService.register(any(PersonDTO.class))).thenReturn(savedPerson);
+        when(jwtService.generateToken(any())).thenReturn("mock-jwt-token");
+
+        mockMvc.perform(post("/api/auth/registration")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(personDTO)))
                 .andExpect(status().isOk())
-                .andExpect(view().name("auth/registration"))
-                .andExpect(model().attributeExists("person"));
-    }
-
-    @Test
-    @WithMockUser
-    void shouldRegisterAndRedirectWhenDataIsValid() throws Exception {
-        PersonDTO validPerson = new PersonDTO();
-        validPerson.setUsername("username");
-        validPerson.setPassword("password");
-        validPerson.setConfirmPassword("password");
-
-        mockMvc.perform(post("/auth/registration")
-                .param("username", validPerson.getUsername())
-                .param("password", validPerson.getPassword())
-                .param("confirmPassword", validPerson.getConfirmPassword())
-                .with(csrf()))
-
-                .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("/auth/login"))
-                .andExpect(model().hasNoErrors());
+                .andExpect(jsonPath("$.token").value("mock-jwt-token"));
 
         verify(registrationService).register(any(PersonDTO.class));
     }
-
-
 }
