@@ -1,7 +1,8 @@
 package ua.august.todoapp.services.interfaces;
 
 import ua.august.todoapp.dto.PersonDTO;
+import ua.august.todoapp.entity.Person;
 
 public interface RegistrationService {
-    void register(PersonDTO personDTO);
+    Person register(PersonDTO personDTO);
 }

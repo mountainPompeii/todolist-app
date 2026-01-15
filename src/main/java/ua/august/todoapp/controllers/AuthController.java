@@ -1,55 +1,73 @@
 package ua.august.todoapp.controllers;
 
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
-import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.WebDataBinder;
+import org.springframework.web.bind.annotation.*;
+import ua.august.todoapp.dto.AuthRequestDTO;
 import ua.august.todoapp.dto.PersonDTO;
+import ua.august.todoapp.entity.Person;
+import ua.august.todoapp.security.JwtService;
+import ua.august.todoapp.security.PersonDetails;
 import ua.august.todoapp.services.interfaces.RegistrationService;
 import ua.august.todoapp.util.PersonValidator;
 
-@Controller
-@RequestMapping("/auth")
+
+import java.util.Map;
+
+@RestController
+@RequestMapping("/api/auth")
+@RequiredArgsConstructor
 public class AuthController {
 
-    private final PersonValidator personValidator;
     private final RegistrationService registrationService;
+    private final AuthenticationManager authenticationManager;
+    private final PersonValidator personValidator;
+    private final JwtService jwtService;
 
-
-    @Autowired
-    public AuthController(PersonValidator personValidator, RegistrationService registrationService) {
-        this.personValidator = personValidator;
-        this.registrationService = registrationService;
+    @InitBinder("personDTO")
+    protected void initBinder(WebDataBinder binder) {
+        binder.addValidators(personValidator);
     }
 
+    @PostMapping("/login")
+    public ResponseEntity<?> performLogin(@RequestBody AuthRequestDTO authRequest) {
 
-    @GetMapping("/login")
-    public String loginPage() {
-        return "auth/login";
-    }
+        UsernamePasswordAuthenticationToken authInputToken =
+                new UsernamePasswordAuthenticationToken(authRequest.getUsername(),
+                                                        authRequest.getPassword());
 
-    @GetMapping("/registration")
-    public String registrationPage(@ModelAttribute("person") PersonDTO personDTO) {
-        return "auth/registration";
+        try {
+            Authentication authentication = authenticationManager.authenticate(authInputToken);
+
+            PersonDetails personDetails = (PersonDetails) authentication.getPrincipal();
+
+            String token = jwtService.generateToken(personDetails);
+
+            return ResponseEntity.ok(Map.of("token", token));
+
+        } catch (BadCredentialsException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("message", "Incorrect credentials"));
+        }
     }
 
     @PostMapping("/registration")
-    public String performRegistration(@ModelAttribute("person") @Valid PersonDTO personDTO,
-                                      BindingResult bindingResult) {
+    public ResponseEntity<?> performRegistration(@RequestBody @Valid PersonDTO personDTO) {
 
-        personValidator.validate(personDTO, bindingResult);
+        Person savedPerson = registrationService.register(personDTO);
 
-        if(bindingResult.hasErrors())
-            return "auth/registration";
+        PersonDetails personDetails = new PersonDetails(savedPerson);
 
-        registrationService.register(personDTO);
+        String token = jwtService.generateToken(personDetails);
 
-        return "redirect:/auth/login";
-
+        return ResponseEntity.ok(Map.of("token", token));
 
     }
 }
