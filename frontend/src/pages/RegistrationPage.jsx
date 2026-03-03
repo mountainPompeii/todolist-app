@@ -9,13 +9,23 @@ export default function RegistrationPage() {
     const navigate = useNavigate();
 
     useEffect(() => {
-        fetch('/api/tasks')
-            .then(res => {
+        const token = localStorage.getItem("jwt_token");
+        if(!token) return;
+
+        fetch('/api/tasks', {
+            headers: { Authorization: `Bearer ${token}` }
+        }).then(res => {
                 if (res.ok) {
                     navigate("/tasks");
+                } else {
+                    localStorage.removeItem("jwt_token");
                 }
-            })
-    })
+        })
+            .catch(() => {
+                localStorage.removeItem("jwt_token");
+            });
+
+    }, [navigate]);
 
     const handleRegistration = async () => {
         console.log(username, password, confirmPassword);
@@ -34,19 +44,25 @@ export default function RegistrationPage() {
                 },
                 body: JSON.stringify(loginData),
             });
-            if (response.ok) {
-                const data = await response.json();
-                if (data.token) {
-                    localStorage.setItem('jwt_token', data.token);
-                    navigate("/tasks")
-                } else {
-                    console.error("Токен не пришёл!", data)
-                }
+
+
+            if (!response.ok) {
+                alert("Error occurred!");
+                return;
+            }
+
+            const data = await response.json();
+
+            if (data?.token) {
+                localStorage.setItem('jwt_token', data.token);
+                navigate("/tasks")
             } else {
+                console.error("Токен не пришёл!", data)
                 alert("Error occurred!");
             }
         } catch (error) {
             console.error("Ошибка сети: ", error);
+            alert("Network error!");
         }
     }
 
