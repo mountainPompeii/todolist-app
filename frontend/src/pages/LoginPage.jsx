@@ -49,7 +49,7 @@ export default function LoginPage() {
 
         return (
             <div style={{padding: '20px', textAlign: 'center'}}>
-                <h1>Вход в систему</h1>
+                <h1>Log in</h1>
 
                 <div style={{marginBottom: '10px'}}>
                     <input
@@ -69,7 +69,7 @@ export default function LoginPage() {
                 </div>
 
                 <button onClick={handleLogin}>
-                    Войти
+                    Sign in
                 </button>
             </div>
         )

@@ -51,14 +51,14 @@ function TasksPage() {
         })
             .then(res => res.json())
             .then(data => {
-                console.log("Метаданные:", data); // Проверка в консоли
+                console.log("Metadata:", data); // Проверка в консоли
                 setMeta(data);
                 if(!editingId) {
                     if (data.priorities.length > 0) setNewTask(prev => ({...prev, priority: data.priorities[0]}));
                     if (data.statuses.length > 0) setNewTask(prev => ({...prev, status: data.statuses[0]}));
                 }
             })
-            .catch(err => console.error("Ошибка метаданных. Проверь контроллер!", err));
+            .catch(err => console.error("Metadata error. Check the controller!", err));
     }
 
     const handleEditTask = (task) => {
@@ -80,9 +80,9 @@ function TasksPage() {
             status: meta.statuses[0]})
     }
 
-    // --- СОЗДАНИЕ ЗАДАЧИ ---
+    // --- CREATING THE TASK ---
     const handleSubmit = async () => {
-        if (!newTask.description.trim()) return alert("Введите текст задачи!");
+        if (!newTask.description.trim()) return alert("Enter the text of the task!");
 
         if(editingId) {
             await updateTask();
@@ -108,10 +108,9 @@ function TasksPage() {
                 setNewTask(prev => ({ ...prev,
                     title: '',
                     description: '' }));
-                // Перезагружаем список
                 fetchAllData();
             } else {
-                alert("Ошибка создания задачи");
+                alert("Error creating the task");
             }
         } catch (error) {
             console.error(error);
@@ -132,13 +131,13 @@ function TasksPage() {
                 handleCancelEdit();
                 fetchAllData();
             } else {
-                alert("Ошибка обновления");
+                alert("Update error");
             }
         } catch (error) { console.error(error); }
     }
 
     const handleDelete = async (id) => {
-        if (!window.confirm("Удалить задачу?")) return;
+        if (!window.confirm("Delete the task?")) return;
 
         await fetch(`/api/tasks/${id}`, { method: 'DELETE',
             headers: {
@@ -157,22 +156,21 @@ function TasksPage() {
     return (
         <div style={{ maxWidth: '600px', margin: '0 auto' }}>
             <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
-                <h1>Мои задачи</h1>
+                <h1>My tasks</h1>
                 <button
                     onClick={handleLogout}
                     style={{backgroundColor: '#555', padding: '5px 10px', fontSize: '14px'}}
                 >
-                    Выйти 🚪
+                    Log out 🚪
                 </button>
             </div>
-            {/* --- ФОРМА (теперь универсальная) --- */}
             <div className="card" style={{ marginBottom: '20px', padding: '15px', border: '1px solid #555' }}>
-                <h3>{editingId ? 'Редактирование задачи' : 'Новая задача'}</h3>
+                <h3>{editingId ? 'Edit task' : 'New task'}</h3>
 
                 <div style={{ display: 'flex', gap: '15px', marginBottom: '15px' }}>
                     <input
                         type="text"
-                        placeholder="Укажите имя задачи"
+                        placeholder="Enter the task name"
                         value={newTask.title}
                         onChange={(e) => setNewTask({...newTask, title: e.target.value})}
                         style={{ flexGrow: 1 }}
@@ -181,7 +179,7 @@ function TasksPage() {
                 <div style={{ display: 'flex', gap: '15px', marginBottom: '15px' }}>
                     <input
                         type="text"
-                        placeholder="Опишите задачу"
+                        placeholder="Describe the task"
                         value={newTask.description}
                         onChange={(e) => setNewTask({...newTask, description: e.target.value})}
                         style={{ flexGrow: 1 }}
@@ -210,7 +208,7 @@ function TasksPage() {
                             </button>
                         )}
                         <button onClick={handleSubmit} style={{backgroundColor: editingId ? 'orange' : ''}}>
-                            {editingId ? 'Сохранить' : 'Добавить'}
+                            {editingId ? 'Save' : 'Add'}
                         </button>
                     </div>
                 </div>
@@ -247,14 +245,19 @@ function TasksPage() {
                                 <div>
                                     <button
                                         onClick={() => handleEditTask(task)}
-                                        style={{ marginRight: '5px', padding: '5px 10px', fontSize: '12px' }}
+                                        style={{ marginRight: '5px',
+                                            padding: '5px 10px',
+                                            fontSize: '12px' }}
                                     >
                                         ✏️
                                     </button>
 
                                     <button
                                         onClick={() => handleDelete(task.id)}
-                                        style={{ backgroundColor: '#ff4444', padding: '5px 10px', fontSize: '12px' }}
+                                        style={{ marginRight: '5px',
+                                            backgroundColor: '#ff4444',
+                                            padding: '5px 10px',
+                                            fontSize: '12px' }}
                                     >
                                         X
                                     </button>
@@ -263,7 +266,7 @@ function TasksPage() {
                         ))}
                     </ul>
                 ) : (
-                    <p>Список пуст.</p>
+                    <p>List is empty</p>
                 )}
             </div>
         </div>
