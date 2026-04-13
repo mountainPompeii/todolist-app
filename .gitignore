@@ -32,9 +32,6 @@ out/
 Thumbs.db
 
 ### Spring Boot ###
-application-*.yml
-application-*.properties
-application.properties
 .env
 
 ### Logs ###
