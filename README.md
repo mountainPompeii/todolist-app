@@ -1,4 +1,4 @@
-# Full-Stack Task Management Application (To-Do App)
+## 📝 Full-Stack Task Management Application (To-Do App)
 
 Modern, secure, and production-ready To-Do application built with **Spring Boot 3** and **React**. The project demonstrates a stateless architecture using **JWT** for authentication and **Docker** for containerization.
 
